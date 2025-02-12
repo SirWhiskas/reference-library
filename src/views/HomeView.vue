@@ -3,6 +3,7 @@ import { ref, onMounted, useTemplateRef } from 'vue'
 
 import RefImageTree from '@/components/RefImageTree.vue'
 import RefImageGallery from '@/components/RefImageGallery.vue'
+import RefImageTiles from '@/components/RefImageTiles.vue';
 import WarmUp from '@/components/WarmUp.vue';
 import GestureTimer from '@/components/GestureTimer.vue';
 
@@ -18,6 +19,7 @@ const toast = useToast();
 const images = ref([]);
 const imageGallery = ref([]);
 const selectedImage = ref(null);
+const imagesForTiles = ref([]);
 const timerValue = ref(120);
 
 const galleryComponent = useTemplateRef("image-gallery");
@@ -65,12 +67,24 @@ const getRandomImagesFromNode = (node) => {
 const handleFileSelect = (node) => {
   const path = node.path;
   const formattedPath = path.replace(/\\/g, '/');
-  if (node.children != undefined) {
-    const shuffledImages = getRandomImagesFromNode(node);
-    const topImagesFromTheDeck = shuffledImages.slice(0, 5);
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.tiff', '.ico'];
 
-    imageGallery.value = topImagesFromTheDeck;
-    galleryComponent.value.showGallery();
+  if (node.children != undefined) {
+    if (node.children.some(c => imageExtensions.some(i => c.path.toLowerCase().endsWith(i)))) {
+      const top20Images = node.children.slice(0, 20);
+      
+      imagesForTiles.value = top20Images.map(c => ({
+        "itemImageSrc": useGetImagePath(c.path.replace(/\\/g, '/')),
+        "thumbnailImageSrc": useGetImagePath(c.path.replace(/\\/g, '/')),
+        "alt": c.data,
+        "title": c.label
+      }));
+    }
+    // const shuffledImages = getRandomImagesFromNode(node);
+    // const topImagesFromTheDeck = shuffledImages.slice(0, 5);
+
+    // imageGallery.value = topImagesFromTheDeck;
+    // galleryComponent.value.showGallery();
   } else {
     const singleFileForGallery = [{
       "itemImageSrc": useGetImagePath(formattedPath),
@@ -139,5 +153,7 @@ onMounted(async () => {
     <ScrollPanel style="width: 100%; height: 75vh;">
       <RefImageTree v-bind:file-data="images" v-on:node-select="(node) => handleFileSelect(node)" />
     </ScrollPanel>
+
+    <RefImageTiles v-bind:images="imagesForTiles" />
   </main>
 </template>
