@@ -7,6 +7,8 @@ import ToastService from 'primevue/toastservice'
 
 import 'primeicons/primeicons.css'
 
+import './assets/styles.css'
+
 
 import App from './App.vue'
 import router from './router'
