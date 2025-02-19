@@ -35,7 +35,7 @@ const handleNodeUnSelect = async (node) => {
 <template>
     <div class="card flex justify-center">
         <Button label="Warm-up" @click="visible = true" />
-        <Dialog v-model:visible="visible" modal header="Edit Profile" :style="{ width: '50vw' }">
+        <Dialog v-model:visible="visible" modal header="Edit Profile">
             <template #header>
                 <div class="inline-flex items-center justify-center gap-2">
                     <span class="font-bold whitespace-nowrap">Select folders for warm-up</span>
@@ -55,7 +55,7 @@ const handleNodeUnSelect = async (node) => {
                     </template>
                 </Card>
                 
-                <ScrollPanel style="width: 100%; height: 200px">
+                <ScrollPanel style="width: 100%; height: 100%">
                     <ul>
                         <li v-for="folder in foldersToUseForWarmUp" :key="folder.key">
                             {{ folder.label }}

@@ -11,12 +11,13 @@ import ScrollPanel from 'primevue/scrollpanel';
 import Toast from 'primevue/toast';
 
 
-import { useGetImageData, useGetImagePath } from '@/composables/images/useImageData'
+import { useGetImageData, useGetImagePath, useGetImageFolder } from '@/composables/images/useImageData'
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
 
 const images = ref([]);
+const imageFolders = ref([]);
 const imageGallery = ref([]);
 const selectedImage = ref(null);
 const imagesForTiles = ref([]);
@@ -71,9 +72,9 @@ const handleFileSelect = (node) => {
 
   if (node.children != undefined) {
     if (node.children.some(c => imageExtensions.some(i => c.path.toLowerCase().endsWith(i)))) {
-      const top20Images = node.children.slice(0, 20);
+      //const top20Images = node.children.slice(0, 20);
       
-      imagesForTiles.value = top20Images.map(c => ({
+      imagesForTiles.value = node.children.map(c => ({
         "itemImageSrc": useGetImagePath(c.path.replace(/\\/g, '/')),
         "thumbnailImageSrc": useGetImagePath(c.path.replace(/\\/g, '/')),
         "alt": c.data,
@@ -132,7 +133,7 @@ const handleTimerToastEnd = () => {
 }
 
 onMounted(async () => {
-  images.value = await useGetImageData()
+  images.value = await useGetImageData();
 })
 </script>
 

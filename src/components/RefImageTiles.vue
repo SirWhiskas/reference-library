@@ -1,10 +1,13 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, computed } from 'vue'
+    
+    import VirtualScroller from 'primevue/virtualscroller';
 
     import Galleria from 'primevue/galleria'
+    import Image from 'primevue/image'
     import Card from 'primevue/card'
 
-    defineProps({
+    const props = defineProps({
         images: {
             type: Array,
             default: () => [],
@@ -15,40 +18,55 @@
     const displayCustom = ref(false);
 
     const responsiveOptions = ref([
-    {
-        breakpoint: '1024px',
-        numVisible: 5
-    },
-    {
-        breakpoint: '768px',
-        numVisible: 3
-    },
-    {
-        breakpoint: '560px',
-        numVisible: 1
+        {
+            breakpoint: '1024px',
+            numVisible: 5
+        },
+        {
+            breakpoint: '768px',
+            numVisible: 3
+        },
+        {
+            breakpoint: '560px',
+            numVisible: 1
+        }
+    ]);
+
+    // Set up pagination
+
+const segmentedImages = computed(() => {
+    // Convert images to 2d array where each row has 5 images
+    const rows = [];
+    for (let i = 0; i < props.images.length; i += 5) {
+        rows.push(props.images.slice(i, i + 5));
     }
-]);
+    return rows;
+});
+
+const totalImages = computed(() => {
+    return props.images.length;
+});
+
 </script>
 
 <template>
-    <Card>
-        <template #content>
-            <Galleria v-model:activeIndex="activeIndex" v-model:visible="displayCustom" :value="images" :responsiveOptions="responsiveOptions" :numVisible="7"
-                containerStyle="max-width: 850px" :circular="true" :fullScreen="true" :showItemNavigators="true" :showThumbnails="false">
-                <template #item="slotProps">
-                    <img :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" style="width: 100%; display: block" />
-                </template>
-                <template #thumbnail="slotProps">
-                    <img :src="slotProps.item.thumbnailImageSrc" :alt="slotProps.item.alt" style="display: block" />
-                </template>
-            </Galleria>
-
-            <div v-if="images" class="grid grid-cols-12 gap-4" style="max-width: 400px">
-                <div v-for="(image, index) of images" :key="index" class="col-span-4">
-                    <img :src="image.thumbnailImageSrc" :alt="image.alt" style="cursor: pointer" @click="imageClick(index)" />
+    <div class="card flex justify-center">
+        <VirtualScroller :items="segmentedImages" :itemSize="[250, 250]" orientation="both" :delay="150" class="border border-surface-200 dark:border-surface-700 rounded" style="width: 100%; height: 100vh;">            
+            <template v-slot:item="{ item, options }">
+                <div class="flex items-center p-2" style="height: 250px">
+                    <template v-for="(el, index) of item" :key="index">
+                        <Image :src="el.thumbnailImageSrc" :alt="el.alt" width="250" style="cursor: pointer" preview />
+                    </template>
+                    
                 </div>
-            </div>
-        </template>
-        
-    </Card>
+            </template>
+        </VirtualScroller>
+    </div>
 </template>
+
+<style scoped>
+.scroller {
+  height: 100%;
+    width: 100%;
+}
+</style>
