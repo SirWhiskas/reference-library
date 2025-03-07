@@ -1,66 +1,77 @@
 <script setup>
-    import { ref, computed } from 'vue'
+    import { ref } from 'vue'
     
-    import VirtualScroller from 'primevue/virtualscroller';
-
-    import Galleria from 'primevue/galleria'
     import Image from 'primevue/image'
-    import Card from 'primevue/card'
+    import DataView from 'primevue/dataview'
+    import SelectButton from 'primevue/selectbutton'
 
-    const props = defineProps({
+    defineProps({
         images: {
             type: Array,
             default: () => [],
         },
     });
 
-    const activeIndex = ref(0);
-    const displayCustom = ref(false);
-
-    const responsiveOptions = ref([
-        {
-            breakpoint: '1024px',
-            numVisible: 5
-        },
-        {
-            breakpoint: '768px',
-            numVisible: 3
-        },
-        {
-            breakpoint: '560px',
-            numVisible: 1
-        }
-    ]);
-
-    // Set up pagination
-
-const segmentedImages = computed(() => {
-    // Convert images to 2d array where each row has 5 images
-    const rows = [];
-    for (let i = 0; i < props.images.length; i += 5) {
-        rows.push(props.images.slice(i, i + 5));
-    }
-    return rows;
-});
-
-const totalImages = computed(() => {
-    return props.images.length;
-});
+    const layout = ref('grid');
+    const options = ref(['list', 'grid']);
 
 </script>
 
 <template>
-    <div class="card flex justify-center">
-        <VirtualScroller :items="segmentedImages" :itemSize="[250, 250]" orientation="both" :delay="150" class="border border-surface-200 dark:border-surface-700 rounded" style="width: 100%; height: 100vh;">            
-            <template v-slot:item="{ item, options }">
-                <div class="flex items-center p-2" style="height: 250px">
-                    <template v-for="(el, index) of item" :key="index">
-                        <Image :src="el.thumbnailImageSrc" :alt="el.alt" width="250" style="cursor: pointer" preview />
-                    </template>
-                    
+    <div class="card">
+        <DataView :value="images" :layout="layout" paginator :rows="10">
+            <template #header>
+                <div class="flex justify-end">
+                    <SelectButton v-model="layout" :options="options" :allowEmpty="false">
+                        <template #option="{ option }">
+                            <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
+                        </template>
+                    </SelectButton>
                 </div>
             </template>
-        </VirtualScroller>
+
+            <template #list="slotProps">
+                <div class="flex flex-col">
+                    <div v-for="(item, index) in slotProps.items" :key="index">
+                        <div class="flex flex-col sm:flex-row sm:items-center p-3 gap-2" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
+                            <div class="md:w-40 relative">
+                                <Image :src="item.thumbnailImageSrc" :alt="item.alt" class="block xl:block mx-auto rounded w-full" style="cursor: pointer" preview />
+                            </div>
+                            <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
+                                <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+                                    <div>
+                                        <div class="text-lg font-medium mt-2">{{ item.title }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template #grid="slotProps">
+                <div class="grid grid-cols-12 gap-4">
+                    <div v-for="(item, index) in slotProps.items" :key="index" class="col-span-2 p-2">
+                        <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
+                            <div class="bg-surface-50 flex justify-center rounded p-4">
+                                <div class="relative mx-auto">
+                                    <Image :src="item.thumbnailImageSrc" :alt="item.alt" class="block xl:block mx-auto rounded w-full" style="cursor: pointer" preview />
+                                </div>
+                            </div>
+                            <div class="pt-6">
+                                <div class="flex flex-row justify-between items-start gap-2">
+                                    <div>
+                                        <div class="text-lg font-medium mt-1">{{ item.title }}</div>
+                                    </div>
+    
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </DataView>
     </div>
 </template>
 
