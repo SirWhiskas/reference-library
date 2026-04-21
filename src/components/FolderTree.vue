@@ -36,4 +36,3 @@ const onNodeUnselect = (node) => {
     @nodeUnselect="onNodeUnselect"
   />
 </template>
->

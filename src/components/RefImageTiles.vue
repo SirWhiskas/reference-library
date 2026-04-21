@@ -32,7 +32,7 @@
 
             <template #list="slotProps">
                 <div class="flex flex-col">
-                    <div v-for="(item, index) in slotProps.items" :key="index">
+                    <div v-for="(item, index) in slotProps.items" :key="item.itemImageSrc">
                         <div class="flex flex-col sm:flex-row sm:items-center p-3 gap-2" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
                             <div class="md:w-40 relative">
                                 <Image :src="item.thumbnailImageSrc" :alt="item.alt" class="block xl:block mx-auto rounded w-full" style="cursor: pointer" preview />
@@ -51,7 +51,7 @@
 
             <template #grid="slotProps">
                 <div class="grid grid-cols-12 gap-4">
-                    <div v-for="(item, index) in slotProps.items" :key="index" class="col-span-2 p-2">
+                    <div v-for="item in slotProps.items" :key="item.itemImageSrc" class="col-span-2 p-2">
                         <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
                             <div class="bg-surface-50 flex justify-center rounded p-4">
                                 <div class="relative mx-auto">

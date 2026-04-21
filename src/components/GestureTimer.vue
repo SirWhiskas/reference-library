@@ -1,5 +1,5 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, computed, onUnmounted } from 'vue'
     const props = defineProps({
         time: {
             type: Number,
@@ -12,14 +12,14 @@
     const clock = ref(0);
     const timerInterval = ref(null);
 
-    // Format time as MM:SS
-    const formattedTime = () => {
+    const formattedTime = computed(() => {
         const minutes = Math.floor(clock.value / 60);
         const seconds = clock.value % 60;
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
+    });
 
     const startTimer = () => {
+        clearInterval(timerInterval.value);
         clock.value = props.time;
 
         timerInterval.value = setInterval(() => {
@@ -32,6 +32,8 @@
         }, 1000);
     }
 
+    onUnmounted(() => clearInterval(timerInterval.value));
+
     defineExpose({
         startTimer
     });
@@ -39,6 +41,6 @@
 
 <template>
     <div>
-        <p>Time Remaining: {{ formattedTime() }}</p>
+        <p>Time Remaining: {{ formattedTime }}</p>
     </div>
 </template>

@@ -6,6 +6,7 @@ export async function useGetImageData() {
 
     return res.data
   } catch (err) {
+    console.error('Failed to fetch images:', err)
     return []
   }
 }
@@ -16,6 +17,7 @@ export async function useGetImageById(id) {
 
     return res.data
   } catch (err) {
+    console.error('Failed to fetch image by id:', err)
     return []
   }
 }
@@ -26,6 +28,7 @@ export async function useGetImageFolder(path = ""){
 
     return res.data
   } catch (err) {
+    console.error('Failed to fetch image folders:', err)
     return []
   }
 }

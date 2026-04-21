@@ -11,15 +11,13 @@ import ScrollPanel from 'primevue/scrollpanel';
 import Toast from 'primevue/toast';
 
 
-import { useGetImageData, useGetImagePath, useGetImageFolder } from '@/composables/images/useImageData'
+import { useGetImageData, useGetImagePath } from '@/composables/images/useImageData'
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
 
 const images = ref([]);
-const imageFolders = ref([]);
 const imageGallery = ref([]);
-const selectedImage = ref(null);
 const imagesForTiles = ref([]);
 const timerValue = ref(120);
 
@@ -56,7 +54,7 @@ const getRandomImagesFromNode = (node) => {
         "title": child.label
       });
     } else {
-      imageGallery.value.push(getRandomImagesFromNode(child));
+      imagesForGallery.push(...getRandomImagesFromNode(child));
     }
   });
 
@@ -95,7 +93,7 @@ const handleFileSelect = (node) => {
     }];
 
     imageGallery.value = singleFileForGallery;
-    galleryComponent.value.showGallery();
+    galleryComponent.value?.showGallery();
   }
   
 }
@@ -117,19 +115,19 @@ const handleWarmUpStart = (folderNodes) => {
   //toast.add({ severity: 'success', summary: 'Warm-up started!', detail: 'About to show the images!', life: 3000 });
   setTimeout(() => {
     imageGallery.value = topImagesFromTheDeck;
-    galleryComponent.value.showGallery();
-    gestureTimerComponent.value.startTimer();
+    galleryComponent.value?.showGallery();
+    gestureTimerComponent.value?.startTimer();
   }, 3000);
   
 }
 
 const handleTimerEnd = () => {
-  toast.add({ severity: 'warn', summary: 'Times up!', detail: 'About to switch to the next image!', life: 3000 });
+  toast.add({ severity: 'warn', summary: 'Times up!', detail: 'About to switch to the next image!', life: 3000, group: 'timer' });
 }
 
 const handleTimerToastEnd = () => {
-  galleryComponent.value.goToNextImage();
-  gestureTimerComponent.value.startTimer();
+  galleryComponent.value?.goToNextImage();
+  gestureTimerComponent.value?.startTimer();
 }
 
 onMounted(async () => {
@@ -139,7 +137,8 @@ onMounted(async () => {
 
 <template>
   <main>
-    <Toast v-on:life-end="handleTimerToastEnd" />
+    <Toast group="timer" v-on:life-end="handleTimerToastEnd" />
+    <Toast />
 
     <GestureTimer 
       ref="gesture-timer" 

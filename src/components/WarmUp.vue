@@ -47,7 +47,7 @@ const handleNodeUnSelect = async (node) => {
                         <ScrollPanel style="width: 100%; height: 200px">
                             <RefImageTree 
                                 v-bind:file-data="fileData" 
-                                v-bind:-selection-mode="'checkbox'"
+                                :selection-mode="'checkbox'"
                                 v-on:node-select="handleNodeSelect"
                                 v-on:node-unselect="handleNodeUnSelect"
                             />
