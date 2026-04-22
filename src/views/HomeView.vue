@@ -140,6 +140,19 @@ const handleTimerEnd = () => {
   }
 }
 
+const handleQuickWarmUp = () => {
+  if (imagesForTiles.value.length === 0) return
+  hasCompletedWarmUp.value = false
+
+  const topImages = shuffleArray(imagesForTiles.value).slice(0, 5)
+
+  setTimeout(() => {
+    imageGallery.value = topImages
+    galleryComponent.value?.showGallery()
+    gestureTimerComponent.value?.startTimer()
+  }, 3000)
+}
+
 const handleTimerToastEnd = () => {
   if (!hasCompletedWarmUp.value) {
     galleryComponent.value?.goToNextImage()
@@ -230,7 +243,7 @@ onMounted(async () => {
           <i class="pi pi-folder-open" style="font-size: 4rem" />
           <p class="text-base font-medium">Select a folder to view images</p>
         </div>
-        <RefImageTiles v-else v-bind:images="imagesForTiles" />
+        <RefImageTiles v-else v-bind:images="imagesForTiles" @quick-warm-up="handleQuickWarmUp" />
       </main>
 
     </div>

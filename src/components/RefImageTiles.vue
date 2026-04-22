@@ -5,6 +5,7 @@ import Image from 'primevue/image'
 import DataView from 'primevue/dataview'
 import SelectButton from 'primevue/selectbutton'
 import InputNumber from 'primevue/inputnumber'
+import Button from 'primevue/button'
 
 defineProps({
   images: {
@@ -12,6 +13,8 @@ defineProps({
     default: () => [],
   },
 })
+
+const emit = defineEmits(['quickWarmUp'])
 
 const layout = ref('grid')
 const options = ref(['list', 'grid'])
@@ -51,11 +54,20 @@ const preDefinedPage = computed(() => {
             />
           </div>
         </div>
-        <SelectButton v-model="layout" :options="options" :allowEmpty="false">
-          <template #option="{ option }">
-            <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
-          </template>
-        </SelectButton>
+        <div class="flex items-center gap-2">
+          <Button
+            icon="pi pi-stopwatch"
+            label="Quick Warm-up"
+            size="small"
+            severity="secondary"
+            @click="emit('quickWarmUp')"
+          />
+          <SelectButton v-model="layout" :options="options" :allowEmpty="false">
+            <template #option="{ option }">
+              <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
+            </template>
+          </SelectButton>
+        </div>
       </div>
     </template>
 
