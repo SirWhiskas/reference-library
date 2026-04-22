@@ -1,14 +1,15 @@
 <script setup>
 import { ref, onMounted, useTemplateRef } from 'vue'
 
-import RefImageTree from '@/components/RefImageTree.vue'
 import RefImageGallery from '@/components/RefImageGallery.vue'
 import RefImageTiles from '@/components/RefImageTiles.vue'
 import WarmUp from '@/components/WarmUp.vue'
 import GestureTimer from '@/components/GestureTimer.vue'
 import LotteryTiles from '@/components/LotteryTiles.vue'
+import FolderTree from '@/components/FolderTree.vue'
 
-import ScrollPanel from 'primevue/scrollpanel'
+import Drawer from 'primevue/drawer'
+import Button from 'primevue/button'
 import Toast from 'primevue/toast'
 
 import { useGetImageData, useGetImagePath } from '@/composables/images/useImageData'
@@ -21,6 +22,8 @@ const imageGallery = ref([])
 const imagesForTiles = ref([])
 const timerValue = ref(120)
 const hasCompletedWarmUp = ref(false)
+const sidebarVisible = ref(false)
+const selectedFolderName = ref('')
 
 const galleryComponent = useTemplateRef('image-gallery')
 const gestureTimerComponent = useTemplateRef('gesture-timer')
@@ -34,12 +37,9 @@ const shuffleArray = (array) => {
 
 const imageByKey = (imageArray, key) => {
   return imageArray.flatMap((obj) => {
-    // If the current object's key matches, return it
     if (obj.key === key) {
       return { ...obj, children: obj.children || [] }
     }
-
-    // Otherwise, check children recursively
     return obj.children ? imageByKey(obj.children, key) : []
   })
 }
@@ -58,31 +58,19 @@ const getRandomImagesFromNode = (node) => {
       imagesForGallery.push(...getRandomImagesFromNode(child))
     }
   })
-
-  const shuffledImages = shuffleArray(imagesForGallery)
-
-  return shuffledImages
+  return shuffleArray(imagesForGallery)
 }
 
 const handleFileSelect = (node) => {
   const path = node.path
   const formattedPath = path.replace(/\\/g, '/')
-  const imageExtensions = [
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.gif',
-    '.bmp',
-    '.webp',
-    '.svg',
-    '.tiff',
-    '.ico',
-  ]
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.tiff', '.ico']
+
+  selectedFolderName.value = node.label
+  sidebarVisible.value = false
 
   if (node.children != undefined) {
     if (node.children.some((c) => imageExtensions.some((i) => c.path.toLowerCase().endsWith(i)))) {
-      //const top20Images = node.children.slice(0, 20);
-
       imagesForTiles.value = node.children.map((c) => ({
         itemImageSrc: useGetImagePath(c.path.replace(/\\/g, '/')),
         thumbnailImageSrc: useGetImagePath(c.path.replace(/\\/g, '/')),
@@ -90,13 +78,8 @@ const handleFileSelect = (node) => {
         title: c.label,
       }))
     }
-    // const shuffledImages = getRandomImagesFromNode(node);
-    // const topImagesFromTheDeck = shuffledImages.slice(0, 5);
-
-    // imageGallery.value = topImagesFromTheDeck;
-    // galleryComponent.value.showGallery();
   } else {
-    const singleFileForGallery = [
+    imageGallery.value = [
       {
         itemImageSrc: useGetImagePath(formattedPath),
         thumbnailImageSrc: useGetImagePath(formattedPath),
@@ -104,8 +87,6 @@ const handleFileSelect = (node) => {
         title: node.label,
       },
     ]
-
-    imageGallery.value = singleFileForGallery
     galleryComponent.value?.showGallery()
   }
 }
@@ -117,16 +98,13 @@ const handleWarmUpStart = (folderNodes) => {
   folderNodes.forEach((node) => {
     const originalNodeData = imageByKey(images.value, node.key)
     if (originalNodeData.length > 0) {
-      const originalNode = originalNodeData[0] // Get the top one TODO: Make a better method
-      const imagesFromNode = getRandomImagesFromNode(originalNode)
+      const imagesFromNode = getRandomImagesFromNode(originalNodeData[0])
       galleryImages = [...galleryImages, ...imagesFromNode]
     }
   })
 
-  const shuffledImages = shuffleArray(galleryImages)
-  const topImagesFromTheDeck = shuffledImages.slice(0, 5)
+  const topImagesFromTheDeck = shuffleArray(galleryImages).slice(0, 5)
 
-  //toast.add({ severity: 'success', summary: 'Warm-up started!', detail: 'About to show the images!', life: 3000 });
   setTimeout(() => {
     imageGallery.value = topImagesFromTheDeck
     galleryComponent.value?.showGallery()
@@ -141,7 +119,6 @@ const handleWarmUpEnd = () => {
     detail: 'Congrats! You did it!',
     life: 3000,
   })
-
   galleryComponent.value.hideGallery()
   gestureTimerComponent.value.stopTimer()
 }
@@ -176,26 +153,86 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main>
+  <div class="flex flex-col h-dvh overflow-hidden bg-surface-50 dark:bg-surface-900">
     <Toast group="timer" v-on:life-end="handleTimerToastEnd" />
     <Toast />
-
     <GestureTimer ref="gesture-timer" v-bind:time="timerValue" v-on:on-times-up="handleTimerEnd" />
-
     <RefImageGallery
       ref="image-gallery"
       v-bind:image-gallery="imageGallery"
       v-on:on-gallery-end="handleGalleryEnd"
     />
 
-    <WarmUp v-on:on-warm-up-start="handleWarmUpStart" />
+    <!-- App header bar -->
+    <header
+      class="flex items-center gap-2 px-3 py-2 bg-surface-0 dark:bg-surface-950 border-b border-surface-200 dark:border-surface-700 shrink-0 z-10 shadow-sm"
+    >
+      <Button
+        icon="pi pi-bars"
+        text
+        rounded
+        size="small"
+        class="lg:hidden -ml-1 shrink-0"
+        aria-label="Toggle folder sidebar"
+        @click="sidebarVisible = true"
+      />
+      <div class="flex items-center gap-2 min-w-0 mr-auto">
+        <i class="pi pi-images text-primary-400 text-lg shrink-0 hidden sm:block" />
+        <span class="font-semibold text-base truncate">Ref Library</span>
+        <span
+          v-if="selectedFolderName"
+          class="text-surface-400 dark:text-surface-500 text-sm truncate hidden sm:inline"
+        >
+          / {{ selectedFolderName }}
+        </span>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <WarmUp v-on:on-warm-up-start="handleWarmUpStart" />
+        <LotteryTiles v-bind:images="imagesForTiles" />
+      </div>
+    </header>
 
-    <ScrollPanel style="width: 100%; height: 75vh">
-      <RefImageTree v-bind:file-data="images" v-on:node-select="(node) => handleFileSelect(node)" />
-    </ScrollPanel>
+    <!-- Main layout: sidebar + content -->
+    <div class="flex flex-1 overflow-hidden">
 
-    <LotteryTiles v-bind:images="imagesForTiles" />
+      <!-- Desktop sidebar -->
+      <nav
+        class="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 border-r border-surface-200 dark:border-surface-700 overflow-y-auto bg-surface-0 dark:bg-surface-950"
+      >
+        <div
+          class="flex items-center gap-2 px-3 py-3 border-b border-surface-100 dark:border-surface-800 sticky top-0 bg-surface-0 dark:bg-surface-950 z-10"
+        >
+          <i class="pi pi-folder text-primary-400" />
+          <span class="font-medium text-sm text-surface-600 dark:text-surface-400 uppercase tracking-wide">
+            Folders
+          </span>
+        </div>
+        <FolderTree v-bind:file-data="images" v-on:node-select="handleFileSelect" />
+      </nav>
 
-    <RefImageTiles v-bind:images="imagesForTiles" />
-  </main>
+      <!-- Mobile drawer -->
+      <Drawer v-model:visible="sidebarVisible" position="left" style="width: 18rem">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <i class="pi pi-images text-primary-400" />
+            <span class="font-semibold">Ref Images</span>
+          </div>
+        </template>
+        <FolderTree v-bind:file-data="images" v-on:node-select="handleFileSelect" />
+      </Drawer>
+
+      <!-- Image content area -->
+      <main class="flex-1 overflow-y-auto">
+        <div
+          v-if="imagesForTiles.length === 0"
+          class="flex flex-col items-center justify-center h-full gap-3 text-surface-300 dark:text-surface-600 select-none"
+        >
+          <i class="pi pi-folder-open" style="font-size: 4rem" />
+          <p class="text-base font-medium">Select a folder to view images</p>
+        </div>
+        <RefImageTiles v-else v-bind:images="imagesForTiles" />
+      </main>
+
+    </div>
+  </div>
 </template>

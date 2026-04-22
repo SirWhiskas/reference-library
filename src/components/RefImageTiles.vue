@@ -1,95 +1,88 @@
 <script setup>
-    import { ref, computed } from 'vue'
-    
-    import Image from 'primevue/image'
-    import DataView from 'primevue/dataview'
-    import SelectButton from 'primevue/selectbutton'
-    import InputNumber from 'primevue/inputnumber'
+import { ref, computed } from 'vue'
 
-    defineProps({
-        images: {
-            type: Array,
-            default: () => [],
-        },
-    });
+import Image from 'primevue/image'
+import DataView from 'primevue/dataview'
+import SelectButton from 'primevue/selectbutton'
+import InputNumber from 'primevue/inputnumber'
 
-    const layout = ref('grid');
-    const options = ref(['list', 'grid']);
+defineProps({
+  images: {
+    type: Array,
+    default: () => [],
+  },
+})
 
-    const pageNumberOverride = ref(0);
-    const numberOfDisplayRows = ref(10);
+const layout = ref('grid')
+const options = ref(['list', 'grid'])
 
-    const preDefinedPage = computed(() => {
-        const pageNumberOffset = pageNumberOverride.value - 1;
-        if (pageNumberOffset <= 0) return 0;
+const pageNumberOverride = ref(0)
+const numberOfDisplayRows = ref(24)
 
-        return pageNumberOffset * numberOfDisplayRows.value;
-    });
-
+const preDefinedPage = computed(() => {
+  const offset = pageNumberOverride.value - 1
+  if (offset <= 0) return 0
+  return offset * numberOfDisplayRows.value
+})
 </script>
 
 <template>
-    <div class="card">
-        <DataView :value="images" :layout="layout" paginator :rows="numberOfDisplayRows" :first="preDefinedPage">
-            <template #header>
-                <div class="flex justify-end">
-                    <InputNumber v-model="pageNumberOverride" />
-                    <SelectButton v-model="layout" :options="options" :allowEmpty="false">
-                        <template #option="{ option }">
-                            <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
-                        </template>
-                    </SelectButton>
-                </div>
-            </template>
+  <DataView :value="images" :layout="layout" paginator :rows="numberOfDisplayRows" :first="preDefinedPage">
+    <template #header>
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-surface-400">Jump to page:</span>
+          <InputNumber
+            v-model="pageNumberOverride"
+            :min="0"
+            size="small"
+            inputClass="w-14 text-sm text-center"
+          />
+        </div>
+        <SelectButton v-model="layout" :options="options" :allowEmpty="false">
+          <template #option="{ option }">
+            <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
+          </template>
+        </SelectButton>
+      </div>
+    </template>
 
-            <template #list="slotProps">
-                <div class="flex flex-col">
-                    <div v-for="(item, index) in slotProps.items" :key="item.itemImageSrc">
-                        <div class="flex flex-col sm:flex-row sm:items-center p-3 gap-2" :class="{ 'border-t border-surface-200 dark:border-surface-700': index !== 0 }">
-                            <div class="md:w-40 relative">
-                                <Image :src="item.thumbnailImageSrc" :alt="item.alt" class="block xl:block mx-auto rounded w-full" style="cursor: pointer" preview />
-                            </div>
-                            <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6">
-                                <div class="flex flex-row md:flex-col justify-between items-start gap-2">
-                                    <div>
-                                        <div class="text-lg font-medium mt-2">{{ item.title }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
+    <template #list="slotProps">
+      <div class="flex flex-col divide-y divide-surface-200 dark:divide-surface-700">
+        <div v-for="item in slotProps.items" :key="item.itemImageSrc">
+          <div class="flex items-center gap-3 p-3">
+            <div
+              class="w-16 h-16 shrink-0 rounded overflow-hidden bg-surface-100 dark:bg-surface-800"
+            >
+              <Image
+                :src="item.thumbnailImageSrc"
+                :alt="item.alt"
+                class="block w-full h-full"
+                imageClass="w-full h-full object-cover"
+                preview
+              />
+            </div>
+            <span class="text-sm font-medium truncate">{{ item.title }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
 
-            <template #grid="slotProps">
-                <div class="grid grid-cols-12 gap-4">
-                    <div v-for="item in slotProps.items" :key="item.itemImageSrc" class="col-span-2 p-2">
-                        <div class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
-                            <div class="bg-surface-50 flex justify-center rounded p-4">
-                                <div class="relative mx-auto">
-                                    <Image :src="item.thumbnailImageSrc" :alt="item.alt" class="block xl:block mx-auto rounded w-full" style="cursor: pointer" preview />
-                                </div>
-                            </div>
-                            <div class="pt-6">
-                                <div class="flex flex-row justify-between items-start gap-2">
-                                    <div>
-                                        <div class="text-lg font-medium mt-1">{{ item.title }}</div>
-                                    </div>
-    
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </DataView>
-    </div>
+    <template #grid="slotProps">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2 p-3">
+        <div v-for="item in slotProps.items" :key="item.itemImageSrc">
+          <div class="aspect-square rounded overflow-hidden bg-surface-100 dark:bg-surface-800">
+            <Image
+              :src="item.thumbnailImageSrc"
+              :alt="item.alt"
+              class="block w-full h-full"
+              imageClass="w-full h-full object-cover"
+              preview
+            />
+          </div>
+          <p class="text-xs text-surface-400 truncate mt-1 px-0.5">{{ item.title }}</p>
+        </div>
+      </div>
+    </template>
+  </DataView>
 </template>
-
-<style scoped>
-.scroller {
-  height: 100%;
-    width: 100%;
-}
-</style>

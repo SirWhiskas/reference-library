@@ -33,8 +33,8 @@ const handleNodeUnSelect = async (node) => {
 </script>
 
 <template>
-    <div class="card flex justify-center">
-        <Button label="Warm-up" @click="visible = true" />
+    <div>
+        <Button label="Warm-up" icon="pi pi-stopwatch" size="small" @click="visible = true" />
         <Dialog v-model:visible="visible" modal header="Edit Profile">
             <template #header>
                 <div class="inline-flex items-center justify-center gap-2">
