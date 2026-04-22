@@ -15,4 +15,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  build: {
+    // Output directly into RefServer so `npm run build` is all that's needed before packaging
+    outDir: '../RefServer/dist',
+    emptyOutDir: true,
+  },
 })
