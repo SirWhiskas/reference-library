@@ -6,6 +6,7 @@ import RefImageGallery from '@/components/RefImageGallery.vue'
 import RefImageTiles from '@/components/RefImageTiles.vue';
 import WarmUp from '@/components/WarmUp.vue';
 import GestureTimer from '@/components/GestureTimer.vue';
+import LotteryTiles from '@/components/LotteryTiles.vue';
 
 import ScrollPanel from 'primevue/scrollpanel';
 import Toast from 'primevue/toast';
@@ -22,6 +23,7 @@ const imageGallery = ref([]);
 const selectedImage = ref(null);
 const imagesForTiles = ref([]);
 const timerValue = ref(120);
+const hasCompletedWarmUp = ref(false);
 
 const galleryComponent = useTemplateRef("image-gallery");
 const gestureTimerComponent = useTemplateRef("gesture-timer");
@@ -101,6 +103,8 @@ const handleFileSelect = (node) => {
 }
 
 const handleWarmUpStart = (folderNodes) => {
+  hasCompletedWarmUp.value = false;
+
   let galleryImages = [];
   folderNodes.forEach(node => {
     const originalNodeData = imageByKey(images.value, node.key);
@@ -123,13 +127,30 @@ const handleWarmUpStart = (folderNodes) => {
   
 }
 
+const handleWarmUpEnd = () => {
+  toast.add({ severity: 'success', summary: 'Warm-up ended!', detail: 'Congrats! You did it!', life: 3000 });
+
+  galleryComponent.value.hideGallery();
+  gestureTimerComponent.value.stopTimer();
+}
+
+const handleGalleryEnd = () => {
+  hasCompletedWarmUp.value = true;
+}
+
 const handleTimerEnd = () => {
-  toast.add({ severity: 'warn', summary: 'Times up!', detail: 'About to switch to the next image!', life: 3000 });
+  if (!hasCompletedWarmUp.value) {
+      toast.add({ severity: 'warn', summary: 'Times up!', detail: 'About to switch to the next image!', life: 3000 });
+  } else {
+      handleWarmUpEnd();
+  }
 }
 
 const handleTimerToastEnd = () => {
-  galleryComponent.value.goToNextImage();
-  gestureTimerComponent.value.startTimer();
+  if (!hasCompletedWarmUp.value) {
+    galleryComponent.value.goToNextImage();
+    gestureTimerComponent.value.startTimer();
+  }
 }
 
 onMounted(async () => {
@@ -147,13 +168,19 @@ onMounted(async () => {
       v-on:on-times-up="handleTimerEnd"
     />
 
-    <RefImageGallery ref="image-gallery" v-bind:image-gallery="imageGallery" />
+    <RefImageGallery 
+      ref="image-gallery" 
+      v-bind:image-gallery="imageGallery"
+      v-on:on-gallery-end="handleGalleryEnd"
+    />
 
     <WarmUp v-on:on-warm-up-start="handleWarmUpStart" />
 
     <ScrollPanel style="width: 100%; height: 75vh;">
       <RefImageTree v-bind:file-data="images" v-on:node-select="(node) => handleFileSelect(node)" />
     </ScrollPanel>
+
+    <LotteryTiles v-bind:images="imagesForTiles" />
 
     <RefImageTiles v-bind:images="imagesForTiles" />
   </main>

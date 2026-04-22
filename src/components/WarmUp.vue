@@ -44,7 +44,7 @@ const handleNodeUnSelect = async (node) => {
             <div class="flex items-center gap-4 mb-4">
                 <Card>
                     <template #content>
-                        <ScrollPanel style="width: 100%; height: 200px">
+                        <ScrollPanel style="width: 100%; height: 60vh;">
                             <RefImageTree 
                                 v-bind:file-data="fileData" 
                                 v-bind:-selection-mode="'checkbox'"
@@ -65,7 +65,7 @@ const handleNodeUnSelect = async (node) => {
             </div>
             <template #footer>
                 <Button label="Cancel" text severity="secondary" @click="visible = false" autofocus />
-                <Button :disabled="foldersToUseForWarmUp.length === 0" label="Start Warm-up" outlined severity="secondary" @click="emit('onWarmUpStart', foldersToUseForWarmUp)" autofocus />
+                <Button :disabled="foldersToUseForWarmUp.length === 0" label="Start Warm-up" outlined severity="secondary" @click="() => { visible = false; emit('onWarmUpStart', foldersToUseForWarmUp); }" autofocus />
             </template>
         </Dialog>
     </div>

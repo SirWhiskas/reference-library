@@ -32,8 +32,14 @@
         }, 1000);
     }
 
+    const stopTimer = () => {
+        clearInterval(timerInterval.value);
+        clock.value = 0;
+    };
+
     defineExpose({
-        startTimer
+        startTimer,
+        stopTimer
     });
 </script>
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 import Galleria from "primevue/galleria";
 
@@ -9,6 +9,8 @@ const props = defineProps({
         default: () => [],
     },
 });
+
+const emit = defineEmits(['onGalleryEnd']);
 
 const displayGalleryFull = ref(false);
 const responsiveOptions = ref([
@@ -35,19 +37,31 @@ const showGallery = () => {
     displayGalleryFull.value = true;
 }
 
+const hideGallery = () => {
+    activeIndex.value = 0;
+    displayGalleryFull.value = false;
+}
+
 const goToNextImage = () => {
     activeIndex.value = activeIndex.value === props.imageGallery.length - 1 ? props.imageGallery.length - 1 : activeIndex.value + 1;
 }
 
+watch(activeIndex, (newIndex) => {
+    if (newIndex === props.imageGallery.length - 1) {
+        emit("onGalleryEnd");
+    }
+});
+
 defineExpose({
     showGallery,
+    hideGallery,
     goToNextImage
 });
 
 </script>
 
 <template>
-    <Galleria v-model:activeIndex="activeIndex" v-model:visible="displayGalleryFull" :value="imageGallery" :responsiveOptions="responsiveOptions" :fullScreen="true" :numVisible="5" :circular="true" containerStyle="max-width: 99%; max-height: 99vh;"
+    <Galleria v-model:active-index="activeIndex" v-model:visible="displayGalleryFull" :value="imageGallery" :responsiveOptions="responsiveOptions" :fullScreen="true" :numVisible="5" :circular="true" containerStyle="max-width: 99%; max-height: 99vh;"
             :showItemNavigators="true" :showThumbnails="false">
         <template #item="slotProps">
             <img :src="slotProps.item.itemImageSrc" :alt="slotProps.item.alt" style="max-width: 100%; max-height: 95vh; object-fit: contain; display: block; margin: auto;" />
