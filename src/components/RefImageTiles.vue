@@ -1,9 +1,10 @@
 <script setup>
-    import { ref } from 'vue'
+    import { ref, computed } from 'vue'
     
     import Image from 'primevue/image'
     import DataView from 'primevue/dataview'
     import SelectButton from 'primevue/selectbutton'
+    import InputNumber from 'primevue/inputnumber'
 
     defineProps({
         images: {
@@ -15,13 +16,24 @@
     const layout = ref('grid');
     const options = ref(['list', 'grid']);
 
+    const pageNumberOverride = ref(0);
+    const numberOfDisplayRows = ref(10);
+
+    const preDefinedPage = computed(() => {
+        const pageNumberOffset = pageNumberOverride.value - 1;
+        if (pageNumberOffset <= 0) return 0;
+
+        return pageNumberOffset * numberOfDisplayRows.value;
+    });
+
 </script>
 
 <template>
     <div class="card">
-        <DataView :value="images" :layout="layout" paginator :rows="10">
+        <DataView :value="images" :layout="layout" paginator :rows="numberOfDisplayRows" :first="preDefinedPage">
             <template #header>
                 <div class="flex justify-end">
+                    <InputNumber v-model="pageNumberOverride" />
                     <SelectButton v-model="layout" :options="options" :allowEmpty="false">
                         <template #option="{ option }">
                             <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />

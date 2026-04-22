@@ -3,81 +3,92 @@ import { ref, onMounted, useTemplateRef } from 'vue'
 
 import RefImageTree from '@/components/RefImageTree.vue'
 import RefImageGallery from '@/components/RefImageGallery.vue'
-import RefImageTiles from '@/components/RefImageTiles.vue';
-import WarmUp from '@/components/WarmUp.vue';
-import GestureTimer from '@/components/GestureTimer.vue';
+import RefImageTiles from '@/components/RefImageTiles.vue'
+import WarmUp from '@/components/WarmUp.vue'
+import GestureTimer from '@/components/GestureTimer.vue'
+import LotteryTiles from '@/components/LotteryTiles.vue'
 
-import ScrollPanel from 'primevue/scrollpanel';
-import Toast from 'primevue/toast';
-
+import ScrollPanel from 'primevue/scrollpanel'
+import Toast from 'primevue/toast'
 
 import { useGetImageData, useGetImagePath } from '@/composables/images/useImageData'
-import { useToast } from 'primevue/usetoast';
+import { useToast } from 'primevue/usetoast'
 
-const toast = useToast();
+const toast = useToast()
 
-const images = ref([]);
-const imageGallery = ref([]);
-const imagesForTiles = ref([]);
-const timerValue = ref(120);
+const images = ref([])
+const imageGallery = ref([])
+const imagesForTiles = ref([])
+const timerValue = ref(120)
+const hasCompletedWarmUp = ref(false)
 
-const galleryComponent = useTemplateRef("image-gallery");
-const gestureTimerComponent = useTemplateRef("gesture-timer");
+const galleryComponent = useTemplateRef('image-gallery')
+const gestureTimerComponent = useTemplateRef('gesture-timer')
 
 const shuffleArray = (array) => {
-    return array
-        .map(value => ({ value, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ value }) => value);
+  return array
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value)
 }
 
 const imageByKey = (imageArray, key) => {
   return imageArray.flatMap((obj) => {
     // If the current object's key matches, return it
     if (obj.key === key) {
-      return { ...obj, children: obj.children || [] };
+      return { ...obj, children: obj.children || [] }
     }
 
     // Otherwise, check children recursively
-    return obj.children ? imageByKey(obj.children, key) : [];
-  });
+    return obj.children ? imageByKey(obj.children, key) : []
+  })
 }
 
 const getRandomImagesFromNode = (node) => {
-  const imagesForGallery = [];
+  const imagesForGallery = []
   node.children.forEach((child) => {
     if (child.children === undefined) {
       imagesForGallery.push({
-        "itemImageSrc": useGetImagePath(child.path.replace(/\\/g, '/')),
-        "thumbnailImageSrc": useGetImagePath(child.path.replace(/\\/g, '/')),
-        "alt": child.data,
-        "title": child.label
-      });
+        itemImageSrc: useGetImagePath(child.path.replace(/\\/g, '/')),
+        thumbnailImageSrc: useGetImagePath(child.path.replace(/\\/g, '/')),
+        alt: child.data,
+        title: child.label,
+      })
     } else {
-      imagesForGallery.push(...getRandomImagesFromNode(child));
+      imagesForGallery.push(...getRandomImagesFromNode(child))
     }
-  });
+  })
 
-  const shuffledImages = shuffleArray(imagesForGallery);
+  const shuffledImages = shuffleArray(imagesForGallery)
 
-  return shuffledImages;
+  return shuffledImages
 }
 
 const handleFileSelect = (node) => {
-  const path = node.path;
-  const formattedPath = path.replace(/\\/g, '/');
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg', '.tiff', '.ico'];
+  const path = node.path
+  const formattedPath = path.replace(/\\/g, '/')
+  const imageExtensions = [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.bmp',
+    '.webp',
+    '.svg',
+    '.tiff',
+    '.ico',
+  ]
 
   if (node.children != undefined) {
-    if (node.children.some(c => imageExtensions.some(i => c.path.toLowerCase().endsWith(i)))) {
+    if (node.children.some((c) => imageExtensions.some((i) => c.path.toLowerCase().endsWith(i)))) {
       //const top20Images = node.children.slice(0, 20);
-      
-      imagesForTiles.value = node.children.map(c => ({
-        "itemImageSrc": useGetImagePath(c.path.replace(/\\/g, '/')),
-        "thumbnailImageSrc": useGetImagePath(c.path.replace(/\\/g, '/')),
-        "alt": c.data,
-        "title": c.label
-      }));
+
+      imagesForTiles.value = node.children.map((c) => ({
+        itemImageSrc: useGetImagePath(c.path.replace(/\\/g, '/')),
+        thumbnailImageSrc: useGetImagePath(c.path.replace(/\\/g, '/')),
+        alt: c.data,
+        title: c.label,
+      }))
     }
     // const shuffledImages = getRandomImagesFromNode(node);
     // const topImagesFromTheDeck = shuffledImages.slice(0, 5);
@@ -85,53 +96,82 @@ const handleFileSelect = (node) => {
     // imageGallery.value = topImagesFromTheDeck;
     // galleryComponent.value.showGallery();
   } else {
-    const singleFileForGallery = [{
-      "itemImageSrc": useGetImagePath(formattedPath),
-      "thumbnailImageSrc": useGetImagePath(formattedPath),
-      "alt": node.data,
-      "title": node.label
-    }];
+    const singleFileForGallery = [
+      {
+        itemImageSrc: useGetImagePath(formattedPath),
+        thumbnailImageSrc: useGetImagePath(formattedPath),
+        alt: node.data,
+        title: node.label,
+      },
+    ]
 
-    imageGallery.value = singleFileForGallery;
-    galleryComponent.value?.showGallery();
+    imageGallery.value = singleFileForGallery
+    galleryComponent.value?.showGallery()
   }
-  
 }
 
 const handleWarmUpStart = (folderNodes) => {
-  let galleryImages = [];
-  folderNodes.forEach(node => {
-    const originalNodeData = imageByKey(images.value, node.key);
-    if (originalNodeData.length > 0) {
-      const originalNode = originalNodeData[0]; // Get the top one TODO: Make a better method
-      const imagesFromNode = getRandomImagesFromNode(originalNode);
-      galleryImages = [...galleryImages, ...imagesFromNode];
-    }
-  });
+  hasCompletedWarmUp.value = false
 
-  const shuffledImages = shuffleArray(galleryImages);
-  const topImagesFromTheDeck = shuffledImages.slice(0, 5);
+  let galleryImages = []
+  folderNodes.forEach((node) => {
+    const originalNodeData = imageByKey(images.value, node.key)
+    if (originalNodeData.length > 0) {
+      const originalNode = originalNodeData[0] // Get the top one TODO: Make a better method
+      const imagesFromNode = getRandomImagesFromNode(originalNode)
+      galleryImages = [...galleryImages, ...imagesFromNode]
+    }
+  })
+
+  const shuffledImages = shuffleArray(galleryImages)
+  const topImagesFromTheDeck = shuffledImages.slice(0, 5)
 
   //toast.add({ severity: 'success', summary: 'Warm-up started!', detail: 'About to show the images!', life: 3000 });
   setTimeout(() => {
-    imageGallery.value = topImagesFromTheDeck;
-    galleryComponent.value?.showGallery();
-    gestureTimerComponent.value?.startTimer();
-  }, 3000);
-  
+    imageGallery.value = topImagesFromTheDeck
+    galleryComponent.value?.showGallery()
+    gestureTimerComponent.value?.startTimer()
+  }, 3000)
+}
+
+const handleWarmUpEnd = () => {
+  toast.add({
+    severity: 'success',
+    summary: 'Warm-up ended!',
+    detail: 'Congrats! You did it!',
+    life: 3000,
+  })
+
+  galleryComponent.value.hideGallery()
+  gestureTimerComponent.value.stopTimer()
+}
+
+const handleGalleryEnd = () => {
+  hasCompletedWarmUp.value = true
 }
 
 const handleTimerEnd = () => {
-  toast.add({ severity: 'warn', summary: 'Times up!', detail: 'About to switch to the next image!', life: 3000, group: 'timer' });
+  if (!hasCompletedWarmUp.value) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Times up!',
+      detail: 'About to switch to the next image!',
+      life: 3000,
+    })
+  } else {
+    handleWarmUpEnd()
+  }
 }
 
 const handleTimerToastEnd = () => {
-  galleryComponent.value?.goToNextImage();
-  gestureTimerComponent.value?.startTimer();
+  if (!hasCompletedWarmUp.value) {
+    galleryComponent.value?.goToNextImage()
+    gestureTimerComponent.value?.startTimer()
+  }
 }
 
 onMounted(async () => {
-  images.value = await useGetImageData();
+  images.value = await useGetImageData()
 })
 </script>
 
@@ -140,19 +180,21 @@ onMounted(async () => {
     <Toast group="timer" v-on:life-end="handleTimerToastEnd" />
     <Toast />
 
-    <GestureTimer 
-      ref="gesture-timer" 
-      v-bind:time="timerValue"
-      v-on:on-times-up="handleTimerEnd"
-    />
+    <GestureTimer ref="gesture-timer" v-bind:time="timerValue" v-on:on-times-up="handleTimerEnd" />
 
-    <RefImageGallery ref="image-gallery" v-bind:image-gallery="imageGallery" />
+    <RefImageGallery
+      ref="image-gallery"
+      v-bind:image-gallery="imageGallery"
+      v-on:on-gallery-end="handleGalleryEnd"
+    />
 
     <WarmUp v-on:on-warm-up-start="handleWarmUpStart" />
 
-    <ScrollPanel style="width: 100%; height: 75vh;">
+    <ScrollPanel style="width: 100%; height: 75vh">
       <RefImageTree v-bind:file-data="images" v-on:node-select="(node) => handleFileSelect(node)" />
     </ScrollPanel>
+
+    <LotteryTiles v-bind:images="imagesForTiles" />
 
     <RefImageTiles v-bind:images="imagesForTiles" />
   </main>
