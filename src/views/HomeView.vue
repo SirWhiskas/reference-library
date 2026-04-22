@@ -180,15 +180,17 @@ onMounted(async () => {
     <header
       class="flex items-center gap-2 px-3 py-2 bg-surface-0 dark:bg-surface-950 border-b border-surface-200 dark:border-surface-700 shrink-0 z-10 shadow-sm"
     >
-      <Button
-        icon="pi pi-bars"
-        text
-        rounded
-        size="small"
-        class="lg:hidden -ml-1 shrink-0"
-        aria-label="Toggle folder sidebar"
-        @click="sidebarVisible = true"
-      />
+      <div class="lg:hidden shrink-0">
+        <Button
+          icon="pi pi-bars"
+          text
+          rounded
+          size="small"
+          class="-ml-1"
+          aria-label="Toggle folder sidebar"
+          @click="sidebarVisible = true"
+        />
+      </div>
       <div class="flex items-center gap-2 min-w-0 mr-auto">
         <i class="pi pi-images text-primary-400 text-lg shrink-0 hidden sm:block" />
         <span class="font-semibold text-base truncate">Ref Library</span>
