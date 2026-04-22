@@ -59,6 +59,7 @@ const preDefinedPage = computed(() => {
                 :alt="item.alt"
                 class="block w-full h-full"
                 imageClass="w-full h-full object-cover"
+                :pt="{ image: { loading: 'lazy', decoding: 'async' } }"
                 preview
               />
             </div>
@@ -77,6 +78,7 @@ const preDefinedPage = computed(() => {
               :alt="item.alt"
               class="block w-full h-full"
               imageClass="w-full h-full object-cover"
+              :pt="{ image: { loading: 'lazy', decoding: 'async' } }"
               preview
             />
           </div>
