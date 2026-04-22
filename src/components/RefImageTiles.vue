@@ -17,7 +17,7 @@ const layout = ref('grid')
 const options = ref(['list', 'grid'])
 
 const pageNumberOverride = ref(0)
-const numberOfDisplayRows = ref(24)
+const numberOfDisplayRows = ref(12)
 
 const preDefinedPage = computed(() => {
   const offset = pageNumberOverride.value - 1
@@ -30,14 +30,26 @@ const preDefinedPage = computed(() => {
   <DataView :value="images" :layout="layout" paginator :rows="numberOfDisplayRows" :first="preDefinedPage">
     <template #header>
       <div class="flex items-center justify-between gap-2 flex-wrap">
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-surface-400">Jump to page:</span>
-          <InputNumber
-            v-model="pageNumberOverride"
-            :min="0"
-            size="small"
-            inputClass="w-14 text-sm text-center"
-          />
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-1">
+            <span class="text-sm text-surface-400">Per page:</span>
+            <InputNumber
+              v-model="numberOfDisplayRows"
+              :min="1"
+              :max="100"
+              size="small"
+              inputClass="w-14 text-sm text-center"
+            />
+          </div>
+          <div class="flex items-center gap-1">
+            <span class="text-sm text-surface-400">Jump to page:</span>
+            <InputNumber
+              v-model="pageNumberOverride"
+              :min="0"
+              size="small"
+              inputClass="w-14 text-sm text-center"
+            />
+          </div>
         </div>
         <SelectButton v-model="layout" :options="options" :allowEmpty="false">
           <template #option="{ option }">
